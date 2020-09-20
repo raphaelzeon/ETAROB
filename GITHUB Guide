@@ -1,0 +1,17 @@
+To upload files
+1) Create a repository in GITHUB account along with ReadME
+2) Clone the repository into the folder you want to upload. Cut and paste .git folder and ReadME file from the cloned folder into the desired folder. 	 Open this desired folder on your terminal.
+3) Type git status
+4) Then type "git add ." to add all the files
+5) Then commit the added files by typing git commit -a -m "<Required comment>" to give a short decription of the uploaded files
+6) "git push" to push the files into the GITHUB account. Refresh your account page to see the uploaded files
+
+To update the files 
+1) Open the desired folder on your terminal.
+2) "git pull" to update the folder, if you have made any changes on the GITHUB account
+
+To retrieve deleted files
+1) Open the desired folder on your terminal.
+2) "git log" to check your history
+3) Copy the commit of the required file
+4) git checkout <Copied commit> to bring back the deleted file.
