@@ -1,6 +1,6 @@
 <launch>
-  <arg name="model" default="$(find etarobottest)/urdf/base.urdf.xacro" />
-  <arg name="rvizconfig" default="$(find etarobottest)/config/etarob.rviz" />
+  <arg name="model" default="$(find etarobtest)/urdf/base.urdf.xacro" />
+  <arg name="rvizconfig" default="$(find etarobtest)/config/etarob.rviz" />
   <arg name="gui" default="true" />
 
   <param name="robot_description" command="$(find xacro)/xacro.py --inorder $(arg model)" />

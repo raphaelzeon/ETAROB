@@ -123,7 +123,7 @@
   <!-- base_connection (lower) -->
   <xacro:macro name= "base_lower" params="suffix *origin rot_axis">
     <joint name= "${suffix}_base_lower" type="revolute">
-       <axis xyz="0 ${rot_axis} 0" />-->
+       <axis xyz="0 ${rot_axis} 0" />
        <limit lower="${-5*M_PI/180.0}" upper="${5*M_PI/180.0}" effort="${10*mx160_effort}" velocity="${mx160_velocity/5}"/>
        <parent link="base_link" />
        <child link="${suffix}_connection_lower" />

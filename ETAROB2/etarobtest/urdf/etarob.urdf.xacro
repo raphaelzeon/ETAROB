@@ -1,0 +1,512 @@
+<?xml version="1.0"?>
+<robot name="etarob" 
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"	
+       xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+
+  <xacro:arg name="tool_name" default="" />
+  <xacro:property name="tool_name" value="$(arg tool_name)" />
+
+
+  <!-- constants -->
+  <xacro:property name="M_PI" value="3.1415926535897931" />
+  <xacro:property name="ns" value="etarob" />
+
+  <!-- include parameters from config file -->
+  <xacro:include filename="$(find etarob_new)/urdf/load_config.urdf.xacro" ns="etarob_config" />
+  <!-- include gazebo files for etarob -->
+  <xacro:include filename="$(find etarob_new)/urdf/etarob.gazebo.xacro" />
+
+  <!-- wheel -->
+  <xacro:property name="wheel_radius" value="0.375" />
+  <xacro:property name="wheel_width" value="0.28" />
+
+  <!-- base -->
+  <xacro:property name="base_width" value="1.78" />
+  <xacro:property name="base_length" value="1.64" />
+  <xacro:property name="base_height" value="0.4" />
+  <xacro:property name="base_simple_width" value="1.2" />
+  <xacro:property name="base_simple_length" value="1.2" />
+  <xacro:property name="base_simple_height" value="0.3" />
+ <!-- <xacro:property name="base_to_weeding_tool_x" value="0.1875" />
+  <xacro:property name="base_to_weeding_tool_y" value="0.36" />
+  <xacro:property name="base_to_weeding_tool_z" value="-0.427" />
+  <xacro:property name="base_to_spray_tool_x" value="-0.025" />
+  <xacro:property name="base_to_spray_tool_y" value="0.0" />
+  <xacro:property name="base_to_spray_tool_z" value="-0.21" /> -->
+
+  <xacro:property name="caster_offset_x" value="0.75" /> <!-- 0.15 -->
+  <xacro:property name="caster_offset_y" value="0.81" /> <!-- 0.15 -->
+  <xacro:property name="caster_offset_z" value="0.05" />
+
+  <!-- suspension -->
+  <xacro:property name="suspension_offset_x" value="0.548611" />
+  <xacro:property name="suspension_offset_y" value="0.622036" /> <!-- 0.6683-0.0655 -->
+  <xacro:property name="suspension_offset_z" value="0.13" />
+  <xacro:property name="suspension_center_of_mass_x" value="0.296087"/>
+  <xacro:property name="suspension_center_of_mass_y" value="-0.028977"/>
+  <xacro:property name="suspension_center_of_mass_z" value="0.000000"/>
+  <xacro:property name="suspension_ixx" value="0.019" />
+  <xacro:property name="suspension_ixy" value="-0.006" />
+  <xacro:property name="suspension_ixz" value="0.0" />
+  <xacro:property name="suspension_iyy" value="0.085" />
+  <xacro:property name="suspension_iyz" value="0.0" />
+  <xacro:property name="suspension_izz" value="0.099" />
+  <xacro:property name="suspension_to_crossbar" value="0.6238" />
+
+  <!-- crossbar -->
+  <xacro:property name="crossbar_height" value="0.702963" />
+  <xacro:property name="crossbar_center_of_mass_x" value="0.351268"/>
+  <xacro:property name="crossbar_center_of_mass_y" value="0.091746"/>
+  <xacro:property name="crossbar_center_of_mass_z" value="0.000001"/>
+  <xacro:property name="crossbar_ixx" value="0.05" />
+  <xacro:property name="crossbar_ixy" value="-0.08" />
+  <xacro:property name="crossbar_ixz" value="0.0" />
+  <xacro:property name="crossbar_iyy" value="0.64" />
+  <xacro:property name="crossbar_iyz" value="0.0" />
+  <xacro:property name="crossbar_izz" value="0.65" />
+
+  <!-- Hokuyo https://www.hokuyo-aut.jp/02sensor/07scanner/urg_04lx.html -->
+  <xacro:property name="hokuyo_length" value="0.07" />
+  <xacro:property name="hokuyo_radius" value="0.043" /> <!-- Because max surface area of Hokuyo laser is not cylindrical, this isn't accurate, which shouldn't matter. -->
+
+  <!-- drive parameters -->
+  <xacro:property name="mx160_effort" value="500" />
+  <xacro:property name="mx160_velocity" value="50" />
+  
+  <!-- inertia -->
+  <xacro:macro name="cylinder_inertia" params="m r h">    
+      <inertia  ixx="${m*(3*r*r+h*h)/12}" ixy = "0" ixz = "0"
+                iyy="${m*(3*r*r+h*h)/12}" iyz = "0" izz="${m*r*r/2}" />
+  </xacro:macro>
+
+  <xacro:macro name="box_inertia" params="m x y z">
+      <inertia  ixx="${m*(y*y+z*z)/12}" ixy = "0" ixz = "0"
+                iyy="${m*(z*z+x*x)/12}" iyz = "0" izz="${m*(x*x+y*y)/12}" />
+  </xacro:macro>
+
+
+  <!-- wheel -->
+  <xacro:macro name="odom_wheel_tire" params="suffix rot_axis_wheel">
+
+    <joint name="${suffix}_wheel_joint" type="continuous">
+      <axis xyz="0 0 ${rot_axis_wheel}" />
+      <limit effort="${100*mx160_effort}" velocity="${mx160_velocity/2}"/>
+      <dynamics damping="0.0" friction="0.0" />
+      <origin xyz="${crossbar_height} 0 0" rpy="${M_PI/2} 0 0" />
+      <parent link="${suffix}_wheel_rotate" />
+      <child link="${suffix}_wheel_link" />
+    </joint>
+
+    <xacro:simple_transmission name="${suffix}_wheel_joint" interface="hardware_interface/EffortJointInterface" />
+
+    <link name="${suffix}_wheel_link">
+      <inertial>
+        <mass value="2.5" />
+        <origin xyz="0 0 0" />
+        <cylinder_inertia m="2.5" r="${wheel_radius}" h="${wheel_width}" />
+      </inertial>
+      <visual>
+        <geometry>
+          <mesh filename="package://etarob_new/meshes/wheel.stl" />
+        </geometry>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="${wheel_radius}" length="${wheel_width}" />
+        </geometry>
+      </collision>
+    </link>
+
+    <xacro:gazebo_wheel_link name="${suffix}_wheel_link"/>
+
+  </xacro:macro>
+
+  <!-- wheel_rotate (crossbar) -->
+  <xacro:macro name="odom_wheel_rotate" params="suffix *origin rot_axis">
+    <joint name="${suffix}_rotation_joint" type="revolute">
+      <axis xyz="${rot_axis} 0 0" />
+      <limit lower="${-90*M_PI/180.0}" upper="${90*M_PI/180.0}" effort="${mx160_effort}" velocity="${mx160_velocity/10}"/>
+      <dynamics damping="10.0" friction="100" />
+      <xacro:insert_block name="origin" />
+      <parent link="${suffix}_rotation_y_crossbar"/>
+      <child link="${suffix}_wheel_rotate" />
+    </joint>
+
+    <xacro:simple_transmission name="${suffix}_rotation_joint" interface="hardware_interface/EffortJointInterface" />
+
+    <link name="${suffix}_wheel_rotate">
+      <inertial>
+        <mass value="10" />
+        <origin xyz="${crossbar_center_of_mass_x} ${crossbar_center_of_mass_y} ${crossbar_center_of_mass_z}" rpy="0 0 0" />
+        <inertia ixx="${crossbar_ixx}" ixy="${crossbar_ixy}" ixz="${crossbar_ixz}"
+                 iyy="${crossbar_iyy}" iyz="${crossbar_iyz}"
+                 izz="${crossbar_izz}" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://etarob_new/meshes/arm.stl	" />
+        </geometry>
+      </visual>
+      <!--<collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="package://etarob_base_description/meshes/etarob_base/collision/crossbar_c.dae" />
+        </geometry>
+      </collision>-->
+    </link>
+  </xacro:macro>
+ 
+  
+   <!-- complete drive chain -->
+  <!--<xacro:macro name="odom_wheel" params="suffix *origin rot_axis_wheel rot_axis">
+    <xacro:odom_wheel_rotate suffix="${suffix}" rot_axis="${rot_axis}">
+      <xacro:insert_block name="origin"/>
+    </xacro:odom_wheel_rotate>
+    <xacro:odom_wheel_tire suffix="${suffix}" rot_axis_wheel="${rot_axis_wheel}" />
+  </xacro:macro> -->
+
+  <!-- dummy links for rotation of crossbar to stay straight -->
+  <!--<xacro:macro name="rotation_y_crossbar" params="suffix *origin rot_axis">
+    <joint name="${suffix}_rotation_y_crossbar_joint" type="revolute">
+      <axis xyz="0 ${rot_axis} 0" />
+      <limit lower="${-10*M_PI/180}" upper="${10*M_PI/180}" effort="${1000*mx160_effort}" velocity="${mx160_velocity}"/>
+      <dynamics damping="100.0" friction="10.0" />
+      <xacro:insert_block name="origin" />
+      <parent link="${suffix}_rotation_x_crossbar"/>
+      <child link="${suffix}_rotation_y_crossbar" /> -->
+<!--      <mimic joint="${suffix}_suspension_joint" multiplier="-1"/>-->
+    <!--</joint>
+
+    <xacro:simple_transmission name="${suffix}_rotation_y_crossbar_joint" interface="hardware_interface/EffortJointInterface" />
+
+    <link name="${suffix}_rotation_y_crossbar">
+      <inertial>
+        <mass value="1" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <box_inertia m="1" x="0.1" y="0.1" z="0.1" />
+      </inertial>
+    </link>
+  </xacro:macro> -->
+
+  <!-- dummy link for rotation of crossbar to stay straight -->
+  <!--<xacro:macro name="rotation_x_crossbar" params="suffix *origin rot_axis">
+    <joint name="${suffix}_rotation_x_crossbar_joint" type="revolute">
+      <axis xyz="${rot_axis} 0 0" />
+      <limit lower="${-10*M_PI/180}" upper="${10*M_PI/180}" effort="${1000*mx160_effort}" velocity="${mx160_velocity}"/>
+      <dynamics damping="100.0" friction="10.0" />
+      <xacro:insert_block name="origin" />
+      <parent link="${suffix}_suspension"/>
+      <child link="${suffix}_rotation_x_crossbar" />
+    </joint>
+
+    <xacro:simple_transmission name="${suffix}_rotation_x_crossbar_joint" interface="hardware_interface/EffortJointInterface" />
+
+    <link name="${suffix}_rotation_x_crossbar">
+      <inertial>
+        <mass value="1" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <box_inertia m="1" x="0.1" y="0.1" z="0.1" />
+      </inertial>
+    </link>
+  </xacro:macro>
+     -->
+
+  <!-- suspension -->
+  <xacro:macro name="suspension" params="suffix *origin rot_axis mimic">
+    <xacro:if value="${(mimic == 'false')}">
+      <joint name="${suffix}_suspension_joint" type="revolute">
+        <axis xyz="0 ${rot_axis} 0" />
+        <limit lower="${-5*M_PI/180.0}" upper="${5*M_PI/180.0}" effort="${10*mx160_effort}" velocity="${mx160_velocity/5}"/>
+        <dynamics damping="100.0" friction="10.0" />
+        <xacro:insert_block name="origin" />
+        <parent link="base_link"/>
+        <child link="${suffix}_suspension" />
+      </joint>
+
+      <xacro:simple_transmission name="${suffix}_suspension_joint" interface="hardware_interface/EffortJointInterface" />
+
+      <link name="${suffix}_suspension">
+        <inertial>
+          <mass value="5" />
+          <origin xyz="${suspension_center_of_mass_x} ${suspension_center_of_mass_y} ${suspension_center_of_mass_z}" rpy="0 0 0" />
+          <inertia ixx="${suspension_ixx}" ixy="${suspension_ixy}" ixz="${suspension_ixz}"
+                   iyy="${suspension_iyy}" iyz="${suspension_iyz}"
+                   izz="${suspension_izz}" />
+        </inertial>
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://etarob_base_description/meshes/etarob_base/visual/suspension_part1.dae" />
+          </geometry>
+        </visual>
+        <!--<collision>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://etarob_base_description/meshes/etarob_base/collision/suspension_part1_c.dae" />
+          </geometry>
+        </collision>-->
+      </link>
+    </xacro:if>
+
+    <xacro:if value="${(mimic == 'true')}">
+      <joint name="${suffix}2_suspension_joint" type="revolute">
+        <axis xyz="0 ${rot_axis} 0" />
+        <limit lower="${-5*M_PI/180.0}" upper="${5*M_PI/180.0}" effort="${10*mx160_effort}" velocity="${mx160_velocity/5}"/>
+        <dynamics damping="100.0" friction="10.0" />
+        <xacro:insert_block name="origin" />
+        <parent link="base_link"/>
+        <child link="${suffix}2_suspension" />
+<!--        <mimic joint="${suffix}_suspension_joint" />-->
+      </joint>
+
+      <xacro:simple_transmission name="${suffix}2_suspension_joint" interface="hardware_interface/EffortJointInterface" />
+
+      <link name="${suffix}2_suspension">
+        <inertial>
+          <mass value="5" />
+          <origin xyz="${suspension_center_of_mass_x} ${suspension_center_of_mass_y} ${suspension_center_of_mass_z}" rpy="0 0 0" />
+          <inertia ixx="${suspension_ixx}" ixy="${suspension_ixy}" ixz="${suspension_ixz}"
+                   iyy="${suspension_iyy}" iyz="${suspension_iyz}"
+                   izz="${suspension_izz}" />
+        </inertial>
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://etarob_base_description/meshes/etarob_base/visual/suspension_part1.dae" />
+          </geometry>
+        </visual>
+        <!--<collision>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://etarob_base_description/meshes/etarob_base/collision/suspension_part1_c.dae" />
+          </geometry>
+        </collision>-->
+      </link>
+    </xacro:if>
+  </xacro:macro>
+
+  <!-- base -->
+  <link name="base_link">
+    <inertial>
+      <mass value="20.0" />
+      <origin xyz="0 0 0" />
+      <box_inertia m="20.0" x="${base_simple_width}" y="${base_simple_width}" z="${base_simple_height}" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://etarob_base_description/meshes/etarob_base/visual/base_h.dae" scale="0.01 0.01 0.01"/>
+      </geometry>
+
+    </visual>
+    <!--<collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="${base_width} ${base_length} ${base_height}" />
+      </geometry>
+    </collision> -->
+  </link>
+
+  <!-- base_footprint --> 
+  <link name="base_footprint" />
+  <joint name="footprint_to_base" type="fixed" >
+    <origin xyz="0 0 0.6675" rpy="0 0 0" />
+    <parent link="base_footprint"/>
+    <child link="base_link" />
+  </joint>
+
+  <!-- build all drive chains -->
+  <xacro:odom_wheel suffix="fl" rot_axis_wheel="-1" rot_axis="1">
+    <origin xyz="0 0 ${2*suspension_offset_z}" rpy="${M_PI/2} ${M_PI/2} ${M_PI/4}" />
+  </xacro:odom_wheel>
+  <xacro:odom_wheel suffix="fr" rot_axis_wheel="1" rot_axis="1">
+    <origin xyz="0 0 -${2*suspension_offset_z}" rpy="${M_PI/2} -${M_PI/2} -${3*M_PI/4}" />
+  </xacro:odom_wheel>
+  <xacro:odom_wheel suffix="bl" rot_axis_wheel="-1" rot_axis="1">
+    <origin xyz="0 0 -${2*suspension_offset_z}" rpy="${M_PI/2} -${M_PI/2} -${3*M_PI/4}" />
+  </xacro:odom_wheel>
+  <xacro:odom_wheel suffix="br" rot_axis_wheel="1" rot_axis="1">
+    <origin xyz="0 0 ${2*suspension_offset_z}" rpy="${M_PI/2} ${M_PI/2} ${M_PI/4}" />
+  </xacro:odom_wheel>
+
+  <!-- build dummy rotation link and joints -->
+  <xacro:rotation_x_crossbar suffix="fl" rot_axis="1">
+    <origin xyz="${suspension_to_crossbar} 0 0" rpy="0 0 0" />
+  </xacro:rotation_x_crossbar>
+  <xacro:rotation_x_crossbar suffix="fr" rot_axis="1">
+    <origin xyz="${suspension_to_crossbar} 0 0" rpy="0 0 0" />
+  </xacro:rotation_x_crossbar>
+  <xacro:rotation_x_crossbar suffix="bl" rot_axis="1">
+    <origin xyz="${suspension_to_crossbar} 0 0" rpy="0 0 0" />
+  </xacro:rotation_x_crossbar>
+  <xacro:rotation_x_crossbar suffix="br" rot_axis="1">
+    <origin xyz="${suspension_to_crossbar} 0 0" rpy="0 0 0" />
+  </xacro:rotation_x_crossbar>
+
+  <!-- build dummy rotation link and joints -->
+  <xacro:rotation_y_crossbar suffix="fl" rot_axis="1">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:rotation_y_crossbar>
+  <xacro:rotation_y_crossbar suffix="fr" rot_axis="1">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:rotation_y_crossbar>
+  <xacro:rotation_y_crossbar suffix="bl" rot_axis="1">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:rotation_y_crossbar>
+  <xacro:rotation_y_crossbar suffix="br" rot_axis="1">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:rotation_y_crossbar>
+
+  <!-- build suspensions -->
+  <xacro:suspension suffix="fl" rot_axis="1" mimic="false">
+    <origin xyz="${suspension_offset_x} ${suspension_offset_y} -${suspension_offset_z}" rpy="0 0 ${M_PI/4}" />
+  </xacro:suspension>
+  <xacro:suspension suffix="fr" rot_axis="1" mimic="false">
+    <origin xyz="${suspension_offset_x} -${suspension_offset_y} -${suspension_offset_z}" rpy="${M_PI} 0 -${M_PI/4}" />
+  </xacro:suspension>
+  <xacro:suspension suffix="bl" rot_axis="1" mimic="false">
+    <origin xyz="-${suspension_offset_x} ${suspension_offset_y} -${suspension_offset_z}" rpy="${M_PI} 0 ${3*M_PI/4}" />
+  </xacro:suspension>
+  <xacro:suspension suffix="br" rot_axis="1" mimic="false">
+    <origin xyz="-${suspension_offset_x} -${suspension_offset_y} -${suspension_offset_z}" rpy="0 0 -${3*M_PI/4}" />
+  </xacro:suspension>
+  <xacro:suspension suffix="fl" rot_axis="1" mimic="true">
+    <origin xyz="${suspension_offset_x} ${suspension_offset_y} ${suspension_offset_z}" rpy="0 0 ${M_PI/4}" />
+  </xacro:suspension>
+  <xacro:suspension suffix="fr" rot_axis="1" mimic="true">
+    <origin xyz="${suspension_offset_x} -${suspension_offset_y} ${suspension_offset_z}" rpy="${M_PI} 0 -${M_PI/4}" />
+  </xacro:suspension>
+  <xacro:suspension suffix="bl" rot_axis="1" mimic="true">
+    <origin xyz="-${suspension_offset_x} ${suspension_offset_y} ${suspension_offset_z}" rpy="${M_PI} 0 ${3*M_PI/4}" />
+  </xacro:suspension>
+  <xacro:suspension suffix="br" rot_axis="1" mimic="true">
+    <origin xyz="-${suspension_offset_x} -${suspension_offset_y} ${suspension_offset_z}" rpy="0 0 -${3*M_PI/4}" />
+  </xacro:suspension>
+
+  <!-- including lasers -->
+  <xacro:sick_tim571 name="laser_front" ros_topic="laser_front" min_angle="-${M_PI/2}" max_angle="${M_PI/2}"/>  <!-- sensor sweep reduced from 360 degrees to 180 degrees to omit detecting self(etarob base) -->
+  <joint name="base_to_laser_front" type="fixed">
+    <origin xyz="0.73 0.0 -0.15" rpy="0 0 0" />  <!-- origin x from 0.2 to current to place sensor outside base collision box -->
+    <parent link="base_link" />
+    <child link="laser_front_mount_link"/>
+  </joint>
+
+
+  <xacro:sick_tim571 name="laser_right" ros_topic="laser_right" min_angle="-${M_PI/4}" max_angle="${M_PI/4}"/>
+  <joint name="base_to_laser_right" type="fixed">
+    <origin xyz="1 1.1 0.1" rpy="0 ${M_PI/4} 0" />
+    <parent link="base_link" />
+    <child link="laser_right_mount_link"/>
+  </joint>
+
+  <xacro:sick_tim571 name="laser_left" ros_topic="laser_left" min_angle="-${M_PI/4}" max_angle="${M_PI/4}"/>
+  <joint name="base_to_laser_left" type="fixed">
+    <origin xyz="1 -1.1 0.1" rpy="0 ${M_PI/4} 0" />
+    <parent link="base_link" />
+    <child link="laser_left_mount_link"/>
+  </joint>
+
+  <!-- including depth camera -->
+  <xacro:depth_camera camera_name="depth_bot" update_rate="10"/>
+
+  <joint name="base_to_depth_bot" type="fixed">
+    <origin xyz="0.85 0.0 -0.02" rpy="0 ${M_PI/2} 0" />
+    <parent link="base_link" />
+    <child link="depth_bot_link"/>
+  </joint>
+
+  <!-- including gps plugin -->
+  <!-- refHead in deg, refAlt in meter-->
+  <xacro:gps gps_name="gps" body_name="base_link" update_rate="10" refLat="51.35655" refLon="6.36654" refHead="90" refAlt="215.0"/>
+
+  <joint name="base_to_gps" type="fixed">
+    <origin xyz="0.0 0.0 0.5" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="gps_link"/>
+  </joint>
+
+  <!-- including imu plugin-->
+  <xacro:imu imu_name="imu" body_name="base_link" update_rate="50"/> 
+
+  <joint name="base_to_imu" type="fixed">
+    <origin xyz="0.0 0.0 0.5" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="imu_link"/>
+  </joint> 
+
+  <!-- including rgb camera -->
+ <xacro:rgb_camera camera_name="rgb_camera" update_rate="10"/>
+
+  <joint name="base_to_rgb_camera" type="fixed">
+    <origin xyz="0.6 0.0 0.5" rpy="0 ${M_PI/6} 0" />
+    <parent link="base_link" />
+    <child link="rgb_camera_link"/>
+  </joint>
+
+  <!-- including stereo rgb camera -->
+  <xacro:stereo_camera camera_name="stereo_camera" update_rate="30" baseline="0.1"/>
+
+  <joint name="base_to_stereo_camera" type="fixed">
+    <origin xyz="${base_to_weeding_tool_x + 0.05} 0.35 -0.165" rpy="0 ${M_PI/2} 0" />
+    <parent link="base_link" />
+    <child link="stereo_camera_link"/>
+  </joint>
+
+  <!-- including stereo rgb camera -->
+  <xacro:stereo_camera camera_name="stereo_camera2" update_rate="30" baseline="0.1"/>
+
+  <joint name="base_to_stereo_camera2" type="fixed">
+    <origin xyz="${base_to_weeding_tool_x + 0.05} -0.35 -0.165" rpy="0 ${M_PI/2} 0" />
+    <parent link="base_link" />
+    <child link="stereo_camera2_link"/>
+  </joint>
+
+  <xacro:if value="${tool_name == 'tool_weeding_salad'}" >
+    <!-- including weeding tool -->
+    <joint name="weeding_tool_left" type="fixed">
+      <origin xyz="${base_to_weeding_tool_x} ${base_to_weeding_tool_y} ${base_to_weeding_tool_z}" rpy="0 0 ${M_PI}"/>
+      <parent link="base_link"/>
+      <child link="weeding_tool_left"/>
+    </joint>
+    <joint name="weeding_tool_right" type="fixed">
+      <origin xyz="-${base_to_weeding_tool_x} -${base_to_weeding_tool_y} ${base_to_weeding_tool_z}" rpy="0 0 0"/>
+      <parent link="base_link"/>
+      <child link="weeding_tool_right"/>
+    </joint>
+  </xacro:if>
+
+  <xacro:if value="${tool_name == 'tool_weeding_wine'}" >
+    <!-- including wine tool -->
+    <joint name="wine_tool" type="fixed">
+      <origin xyz="0.35 -0.5 -0.025" rpy="${M_PI} 0 -${M_PI/2}"/>
+      <parent link="base_link"/>
+      <child link="wine_tool_attachment"/>
+    </joint>
+
+    <xacro:sick_tim571 name="laser_wine_tool" ros_topic="laser_wine_tool" min_angle="-${M_PI/9}" max_angle="${M_PI/9}"/>
+    <joint name="wine_tool_attachment_to_laser" type="fixed">
+      <origin xyz="0.662 0.275 0.357" rpy="${M_PI} 0 0" />
+      <parent link="wine_tool_attachment" />
+      <child link="laser_wine_tool_mount_link"/>
+    </joint>
+    <xacro:sick_tim571 name="laser_dummy" ros_topic="laser_dummy" min_angle="-${M_PI}" max_angle="${M_PI}"/>
+    <joint name="wine_tool_attachment_to_dummy_laser" type="fixed">
+      <origin xyz="0.662 0.275 0.357" rpy="${M_PI} 0 0" />
+      <parent link="wine_tool_attachment" />
+      <child link="laser_dummy_mount_link"/>
+    </joint>
+  </xacro:if>
+
+  <xacro:if value="${tool_name == 'tool_fertilizing_veg'}" >
+    <!-- including spray tool -->
+    <joint name="spray_tool" type="fixed">
+      <origin xyz="${base_to_spray_tool_x} ${base_to_spray_tool_y} ${base_to_spray_tool_z}" rpy="${M_PI/2} 0 ${M_PI/2}"/>
+      <parent link="base_link"/>
+      <child link="spray_tool"/>
+    </joint>
+  </xacro:if>
+
+</robot>
