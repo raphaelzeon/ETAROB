@@ -235,6 +235,9 @@
         </geometry>
       </collision>
     </link>
+
+    <xacro:gazebo_wheel_link name="${suffix}_wheel_link"/>
+
   </xacro:macro> 
 
   <xacro:base_upper suffix="fl" rot_axis="1" >
