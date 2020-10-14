@@ -192,7 +192,7 @@
 
   </xacro:macro>
 
-  <!--arm_connection_lower 
+  <!--arm_connection_lower--> 
   <xacro:macro name= "arm_connection_lower" params="suffix rot_axis">
     <joint name= "${suffix}_lower_joint" type="revolute">
        <limit lower="${-5*M_PI/180.0}" upper="${5*M_PI/180.0}" effort="${10*mx160_effort}" velocity="${mx160_velocity/5}"/>
@@ -200,7 +200,7 @@
        <child link="${suffix}_arm" />
     </joint>
 
-  </xacro:macro> -->
+  </xacro:macro> 
 
   <!-- wheel -->
   <xacro:macro name="odom_wheel_tire" params="*origin suffix rot_axis_wheel">
@@ -279,10 +279,10 @@
     <origin xyz="1.194088 0.214831 -1.006421" rpy="0 0 0" />
   </xacro:arm_connection_upper>
 
-  <!--<xacro:arm_connection_lower suffix="fl" rot_axis="1" />
+  <xacro:arm_connection_lower suffix="fl" rot_axis="1" />
   <xacro:arm_connection_lower suffix="fr" rot_axis="-1" />
   <xacro:arm_connection_lower suffix="bl" rot_axis="1" />
-  <xacro:arm_connection_lower suffix="br" rot_axis="1" />-->
+  <xacro:arm_connection_lower suffix="br" rot_axis="1" />
 
   <!--<xacro:arm_connection_upper suffix="fl" rot_axis="1" >
     <origin xyz="0 0 0" rpy="0 0 0" />
