@@ -200,6 +200,8 @@
        <child link="${suffix}_arm" />
     </joint>
 
+    <xacro:simple_transmission name="${suffix}_lower_joint" interface="hardware_interface/EffortJointInterface" />
+
   </xacro:macro> 
 
   <!-- wheel -->
