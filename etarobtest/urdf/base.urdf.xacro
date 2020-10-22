@@ -157,42 +157,81 @@
   </xacro:macro>
 
   <!-- arm_connection_upper -->
-  <xacro:macro name="arm_connection_upper" params="suffix *origin rot_axis">
-    <joint name="${suffix}_upper_joint" type="revolute">
-      <axis xyz="0 ${rot_axis} 0" />
-      <limit lower="${-10*M_PI/180.0}" upper="${10*M_PI/180.0}" effort="${10*mx160_effort}" velocity="${mx160_velocity/5}"/>
-      <parent link="${suffix}_connection_upper"/>
-      <child link="${suffix}_arm" />
-      <xacro:insert_block name="origin" />
-    </joint>
+  <xacro:macro name="arm_connection_upper" params="suffix *origin rot_axis mimic">
+    <xacro:if value="${(mimic == 'false')}">
+      <joint name="${suffix}_upper_joint" type="revolute">
+        <axis xyz="0 ${rot_axis} 0" />
+        <limit lower="${-10*M_PI/180.0}" upper="${10*M_PI/180.0}" effort="${10*mx160_effort}" velocity="${mx160_velocity/5}"/>
+        <parent link="${suffix}_connection_upper"/>
+        <child link="${suffix}_arm" />
+        <xacro:insert_block name="origin" />
+      </joint>
 
-    <xacro:simple_transmission name="${suffix}_upper_joint" interface="hardware_interface/EffortJointInterface" />
+      <xacro:simple_transmission name="${suffix}_upper_joint" interface="hardware_interface/EffortJointInterface" />
 	  
-    <link name="${suffix}_arm">
-      <inertial>
-        <mass value="2.0" />
-        <origin xyz="0 0 0" />
-        <box_inertia m="2.0" x="${arm_width}" y="${arm_length}" z="${arm_height}" />
-      </inertial>
+      <link name="${suffix}_arm">
+        <inertial>
+          <mass value="2.0" />
+          <origin xyz="0 0 0" />
+          <box_inertia m="2.0" x="${arm_width}" y="${arm_length}" z="${arm_height}" />
+        </inertial>
 
-      <visual>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <geometry>
-          <mesh filename="package://etarobtest/meshes/arm_${suffix}_shifted.stl" />
-        </geometry>
-      </visual>
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://etarobtest/meshes/arm_${suffix}_shifted.stl" />
+          </geometry>
+        </visual>
 
-      <collision>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <geometry>
-          <box size="${arm_width} ${arm_length} ${arm_height}" />
-        </geometry>
-      </collision>
-    </link>
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="${arm_width} ${arm_length} ${arm_height}" />
+          </geometry>
+        </collision>
+      </link>
+
+    </xacro:if>
+
+    <xacro:if value="${(mimic == 'true')}">
+      <joint name= "${suffix}_lower_joint" type="revolute">
+        <axis xyz="0 ${rot_axis} 0" />
+        <limit lower="${-10*M_PI/180.0}" upper="${10*M_PI/180.0}" effort="${10*mx160_effort}" velocity="${mx160_velocity/5}"/>
+        <parent link="${suffix}_connection_lower"/>
+        <child link="${suffix}_arm" />
+        <xacro:insert_block name="origin" />
+      </joint>
+
+      <xacro:simple_transmission name="${suffix}_lower_joint" interface="hardware_interface/EffortJointInterface" />
+
+      <link name="${suffix}_arm">
+        <inertial>
+          <mass value="2.0" />
+          <origin xyz="0 0 0" />
+          <box_inertia m="2.0" x="${arm_width}" y="${arm_length}" z="${arm_height}" />
+        </inertial>
+
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://etarobtest/meshes/arm_${suffix}_shifted.stl" />
+          </geometry>
+        </visual>
+
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="${arm_width} ${arm_length} ${arm_height}" />
+          </geometry>
+        </collision>
+      </link>
+
+    </xacro:if>
 
   </xacro:macro>
 
-  <!--arm_connection_lower--> 
+
+  <!--arm_connection_lower
   <xacro:macro name= "arm_connection_lower" params="suffix *origin rot_axis">
     <joint name= "${suffix}_lower_joint" type="revolute">
        <axis xyz="0 ${rot_axis} 0" />
@@ -204,7 +243,7 @@
 
     <xacro:simple_transmission name="${suffix}_lower_joint" interface="hardware_interface/EffortJointInterface" />
 
-  </xacro:macro> 
+  </xacro:macro> --> 
 
   <!-- wheel -->
   <xacro:macro name="odom_wheel_tire" params="*origin suffix rot_axis_wheel">
@@ -271,23 +310,35 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:base_lower>
 
-  <xacro:arm_connection_upper suffix="fl" rot_axis="1" >
+  <xacro:arm_connection_upper suffix="fl" rot_axis="1"  mimic="false">
     <origin xyz="-1.355178 0.214831 1.085205" rpy="0 0 0" />
   </xacro:arm_connection_upper>
-  <xacro:arm_connection_upper suffix="fr" rot_axis="-1" >
+  <xacro:arm_connection_upper suffix="fr" rot_axis="-1" mimic="false">
     <origin xyz="-1.35248 0.173899 -1.01988" rpy="0 0 0" />
   </xacro:arm_connection_upper>  
-  <xacro:arm_connection_upper suffix="bl" rot_axis="1" >
+  <xacro:arm_connection_upper suffix="bl" rot_axis="1" mimic="false">
     <origin xyz="1.186923 0.173899 1.083927" rpy="0 0 0" />
   </xacro:arm_connection_upper>
-  <xacro:arm_connection_upper suffix="br" rot_axis="1" >
+  <xacro:arm_connection_upper suffix="br" rot_axis="1" mimic="false">
+    <origin xyz="1.194088 0.214831 -1.006421" rpy="0 0 0" />
+  </xacro:arm_connection_upper>
+  <xacro:arm_connection_upper suffix="fl" rot_axis="1"  mimic="true">
+    <origin xyz="-1.355178 0.214831 1.085205" rpy="0 0 0" />
+  </xacro:arm_connection_upper>
+  <xacro:arm_connection_upper suffix="fr" rot_axis="-1" mimic="true">
+    <origin xyz="-1.35248 0.173899 -1.01988" rpy="0 0 0" />
+  </xacro:arm_connection_upper>  
+  <xacro:arm_connection_upper suffix="bl" rot_axis="1" mimic="true">
+    <origin xyz="1.186923 0.173899 1.083927" rpy="0 0 0" />
+  </xacro:arm_connection_upper>
+  <xacro:arm_connection_upper suffix="br" rot_axis="1" mimic="true">
     <origin xyz="1.194088 0.214831 -1.006421" rpy="0 0 0" />
   </xacro:arm_connection_upper>
 
     <!--<xacro:arm_connection_lower suffix="fl" rot_axis="1" />
   <xacro:arm_connection_lower suffix="fr" rot_axis="-1" />
   <xacro:arm_connection_lower suffix="bl" rot_axis="1" />
-  <xacro:arm_connection_lower suffix="br" rot_axis="1" />-->
+  <xacro:arm_connection_lower suffix="br" rot_axis="1" />
 
   <xacro:arm_connection_lower suffix="fl" rot_axis="1" >
     <origin xyz="0 0 0" rpy="0 0 0" />
@@ -300,7 +351,7 @@
   </xacro:arm_connection_lower>
   <xacro:arm_connection_lower suffix="br" rot_axis="1" >
     <origin xyz="0 0 0" rpy="0 0 0" />
-  </xacro:arm_connection_lower>
+  </xacro:arm_connection_lower>-->
 
   <!--<xacro:arm_connection_upper suffix="fl" rot_axis="1" >
     <origin xyz="0 0 0" rpy="0 0 0" />

@@ -75,91 +75,37 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
-        bl2_suspension:
+        fl_connection_upper:
           Value: true
-        bl_rotation_crossbar:
+        fl_connection_lower:
           Value: true
-        bl_suspension:
+        fl_arm:
           Value: true
-        bl_wheel_link:
+        fl_wheel_joint:
           Value: true
-        bl_wheel_rotate:
+        fr_connection_upper:
           Value: true
-        br2_suspension:
+        fr_connection_lower:
           Value: true
-        br_rotation_crossbar:
+        fr_arm:
           Value: true
-        br_suspension:
+        fr_wheel_joint:
           Value: true
-        br_wheel_link:
+        bl_connection_upper:
           Value: true
-        br_wheel_rotate:
+        bl_connection_lower:
           Value: true
-        depth_bot_link:
+        bl_arm:
           Value: true
-        depth_bot_optical_link:
+        bl_wheel_joint:
           Value: true
-        endeffector1:
+        br_connection_upper:
           Value: true
-        endeffector2:
+        br_connection_lower:
           Value: true
-        endeffector3:
+        br_arm:
           Value: true
-        endeffector4:
-          Value: true
-        endeffector5:
-          Value: true
-        endeffector6:
-          Value: true
-        fl2_suspension:
-          Value: true
-        fl_rotation_crossbar:
-          Value: true
-        fl_suspension:
-          Value: true
-        fl_wheel_link:
-          Value: true
-        fl_wheel_rotate:
-          Value: true
-        fr2_suspension:
-          Value: true
-        fr_rotation_crossbar:
-          Value: true
-        fr_suspension:
-          Value: true
-        fr_wheel_link:
-          Value: true
-        fr_wheel_rotate:
-          Value: true
-        handle1:
-          Value: true
-        handle2:
-          Value: true
-        handle3:
-          Value: true
-        handle4:
-          Value: true
-        handle5:
-          Value: true
-        handle6:
-          Value: true
-        laser_front:
-          Value: true
-        laser_front_mount_link:
-          Value: true
-        laser_left:
-          Value: true
-        laser_left_mount_link:
-          Value: true
-        laser_right:
-          Value: true
-        laser_right_mount_link:
-          Value: true
-        rgb_bot_link:
-          Value: true
-        rgb_bot_optical_link:
-          Value: true
-        tool:
+        br_wheel_joint:
           Value: true
       Marker Scale: 0.30000001192092896
       Name: TF
