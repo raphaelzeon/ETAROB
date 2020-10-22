@@ -26,7 +26,7 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <xacro:macro name="odom_wheel_tire" params="name">
+  <xacro:macro name="gazebo_wheel_link" params="name">
     <gazebo reference="${name}">
       <kp>100000.0</kp>
       <kd>10.0</kd>
@@ -77,8 +77,8 @@
         <hardwareInterface>${interface}</hardwareInterface>
       </joint>
       <actuator name="${name}_motor">
-        <mechanicalReduction>10</mechanicalReduction>
         <hardwareInterface>${interface}</hardwareInterface>
+        <mechanicalReduction>10</mechanicalReduction>
       </actuator>
     </transmission>
   </xacro:macro>
