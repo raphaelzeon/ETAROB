@@ -77,8 +77,8 @@
         <hardwareInterface>${interface}</hardwareInterface>
       </joint>
       <actuator name="${name}_motor">
-        <mechanicalReduction>10</mechanicalReduction>
         <hardwareInterface>${interface}</hardwareInterface>
+        <mechanicalReduction>10</mechanicalReduction>
       </actuator>
     </transmission>
   </xacro:macro>
