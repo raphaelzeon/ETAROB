@@ -25,6 +25,26 @@ etarob:
     joint: br_base_upper
     pid: {p: 100.0, i: 0.01, d: 10.0}
 
+  fl_base_lower_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: fl_base_lower
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  fr_base_lower_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: fr_base_lower
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  bl_base_lower_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: bl_base_lower
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  br_base_lower_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: br_base_lower
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
   fl_upper_joint_position_controller:
     type: effort_controllers/JointPositionController
     joint: fl_upper_joint
@@ -43,6 +63,26 @@ etarob:
   br_upper_joint_position_controller:
     type: effort_controllers/JointPositionController
     joint: br_upper_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  fl_lower_joint_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: fl_lower_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  fr_lower_joint_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: fr_lower_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  bl_lower_joint_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: bl_lower_joint
+    pid: {p: 100.0, i: 0.01, d: 10.0}
+
+  br_lower_joint_position_controller:
+    type: effort_controllers/JointPositionController
+    joint: br_lower_joint
     pid: {p: 100.0, i: 0.01, d: 10.0}
 
   fl_wheel_joint_position_controller:

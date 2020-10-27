@@ -5,7 +5,7 @@
 
   <!-- load the controllers -->
   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-    output="screen" ns="/etarob" args="fl_base_upper_position_controller fr_base_upper_position_controller bl_base_upper_position_controller           		br_base_upper_position_controller fl_base_lower_position_controller fr_base_lower_position_controller bl_base_lower_position_controller 	br_base_lower_position_controller fl_upper_joint_position_controller fr_upper_joint_position_controller bl_upper_joint_position_controller 		fl_lower_joint_position_controller fr_lower_joint_position_controller bl_lower_joint_position_controller br_lower_joint_position_controller 		fl_wheel_joint_position_controller fr_wheel_joint_position_controller bl_wheel_joint_position_controller br_wheel_joint_position_controller   		joint_state_controller"/>
+    output="screen" ns="/etarob" args="fl_base_upper_position_controller fr_base_upper_position_controller bl_base_upper_position_controller           		br_base_upper_position_controller fl_upper_joint_position_controller fr_upper_joint_position_controller bl_upper_joint_position_controller 		br_upper_joint_position_controller fl_wheel_joint_position_controller fr_wheel_joint_position_controller bl_wheel_joint_position_controller    		br_wheel_joint_position_controller joint_state_controller"/>
 
   <!-- convert joint states to TF transforms for rviz, etc -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
