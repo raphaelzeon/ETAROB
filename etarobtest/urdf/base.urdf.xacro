@@ -54,6 +54,27 @@
                 iyy="${m*(z*z+x*x)/12}" iyz = "0" izz="${m*(x*x+y*y)/12}" />
   </xacro:macro>
 
+  <!-- gps sensor -->
+  <xacro:property name="reach_mass" value="0.69" />
+  <xacro:property name="reach_radius" value="0.095" />
+  <xacro:property name="reach_height" value="0.19" />
+  <xacro:property name="reach_origin_x" value="0.562" />
+  <xacro:property name="reach_origin_y" value="0.0" />
+  <xacro:property name="reach_origin_z" value="1.454" />
+  <xacro:property name="reach_collision_origin_x" value="0.0" />
+  <xacro:property name="reach_collision_origin_y" value="0.0" />
+  <xacro:property name="reach_collision_origin_z" value="-0.0125" />
+  <xacro:property name="gps_mass" value="0.69" />
+  <xacro:property name="gps_length" value="0.095" />
+  <xacro:property name="gps_width" value="0.095" />
+  <xacro:property name="gps_height" value="0.19" />
+  <xacro:property name="gps_origin_x" value="0.562" />
+  <xacro:property name="gps_origin_y" value="0.0" />
+  <xacro:property name="gps_origin_z" value="1.454" />
+  <xacro:property name="gps_collision_origin_x" value="0.0" />
+  <xacro:property name="gps_collision_origin_y" value="0.0" />
+  <xacro:property name="gps_collision_origin_z" value="-0.0125" />
+
   <!-- base_footprint -->   
   <link name="base_footprint" />
   <joint name="footprint_to_base" type="fixed">
@@ -290,6 +311,54 @@
 
   </xacro:macro> 
 
+  <!-- gps sensor -->
+  <xacro:macro name="gps" params="*origin parent_link gps_name update_rate refLat refLon refHead refAlt show_visual" >
+    <joint name="base_to_gps" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent_link}" />
+      <child link="${gps_name}_link"/>
+    </joint>
+    <link name="${gps_name}_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <mass value="${reach_mass}" />
+        <xacro:cylinder_inertia m="${reach_mass}" r="${reach_radius}" h="${reach_height}" />
+      </inertial>
+      <xacro:if value="${show_visual}" >
+        <visual>
+          <geometry>
+            <mesh filename="package://etarobtest/meshes/sensors/sensor.stl" />
+          </geometry>
+        </visual>
+      </xacro:if>
+      <collision>
+        <origin xyz="${reach_collision_origin_x} ${gps_collision_origin_y} ${gps_collision_origin_z}"
+                rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="${reach_radius}" length="${reach_height}" />
+        </geometry>
+      </collision>
+    </link>
+    <gazebo>
+      <plugin name="${gps_name}_plugin" filename="libhector_gazebo_ros_gps.so">
+        <updateRate>${update_rate}</updateRate>
+        <bodyName>${gps_name}_link</bodyName>
+        <robotNamespace>etarob</robotNamespace>
+        <frameId>base_link</frameId>
+        <topicName>/${gps_name}_link/fix</topicName>
+        <velocityTopicName>/${gps_name}_link/fix_velocity</velocityTopicName>
+        <referenceLatitude>${refLat}</referenceLatitude>
+        <referenceLongitude>${refLon}</referenceLongitude>
+        <referenceAltitude>${refAlt}</referenceAltitude>
+        <referenceHeading>${refHead}</referenceHeading>
+        <drift>0.0 0.0 0.0</drift>
+        <gaussianNoise>0.00 0.00 0.00</gaussianNoise>
+        <velocityDrift>0 0 0</velocityDrift>
+        <velocityGaussianNoise>0.00 0.00 0.00</velocityGaussianNoise>
+      </plugin>
+    </gazebo>
+  </xacro:macro>
+
   <xacro:base_upper suffix="fl" rot_axis="1" >
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:base_upper>
@@ -398,5 +467,9 @@
   <xacro:odom_wheel_tire suffix="br" rot_axis_wheel="${arm_height}" >
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:odom_wheel_tire>-->
+
+  <xacro:gps parent_link="base_link" gps_name="gps_rover" update_rate="50" refLat="50.761127" refLon="6.074315" refAlt="0.0" refHead="90" show_visual="true" >
+    <origin xyz="0 0 0" rpy="0.0 0.0 0.0" />
+  </xacro:gps>
 
 </robot>
